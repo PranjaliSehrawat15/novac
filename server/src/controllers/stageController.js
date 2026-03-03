@@ -18,3 +18,20 @@ exports.createStage = async (req, res) => {
     });
   }
 };
+
+exports.getStages = async (req, res) => {
+  try {
+    const stages = await Stage.find().sort("order");
+
+    res.status(200).json({
+      success: true,
+      count: stages.length,
+      data: stages,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
