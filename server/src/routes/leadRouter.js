@@ -24,3 +24,12 @@ router.put(
   authorize("admin", "manager", "sales"),
   leadController.updateLead
 );
+
+router.delete(
+  "/:id",
+  protect,
+  authorize("admin"),
+  leadController.deleteLead
+);
+
+module.exports = router;
