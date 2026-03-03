@@ -35,3 +35,30 @@ exports.getStages = async (req, res) => {
     });
   }
 };
+
+exports.updateStage = async (req, res) => {
+  try {
+    const stage = await Stage.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!stage) {
+      return res.status(404).json({
+        success: false,
+        message: "Stage not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: stage,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
