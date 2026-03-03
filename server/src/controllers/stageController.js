@@ -62,3 +62,28 @@ exports.updateStage = async (req, res) => {
     });
   }
 };
+
+exports.deleteStage = async (req, res) => {
+  try {
+    const stage = await Stage.findById(req.params.id);
+
+    if (!stage) {
+      return res.status(404).json({
+        success: false,
+        message: "Stage not found",
+      });
+    }
+
+    await stage.deleteOne();
+
+    res.status(200).json({
+      success: true,
+      message: "Stage deleted successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
