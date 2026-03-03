@@ -5,6 +5,7 @@ const {
   createDeal,
   getAllDeals,
   updateDeal,
+  deleteDeal,
 } = require("../controllers/dealController");
 
 const { protect } = require("../middlewares/authMiddleware");
@@ -15,5 +16,6 @@ router.use(protect);
 router.post("/", authorize("admin", "manager"), createDeal);
 router.get("/", authorize("admin", "manager"), getAllDeals);
 router.put("/:id", authorize("admin", "manager"), updateDeal);
+router.delete("/:id", authorize("admin"), deleteDeal);
 
 module.exports = router;

@@ -77,3 +77,27 @@ exports.updateDeal = async (req, res) => {
     });
   }
 };
+
+//delete deals
+exports.deleteDeal = async (req, res) => {
+  try {
+    const deal = await Deal.findByIdAndDelete(req.params.id);
+
+    if (!deal) {
+      return res.status(404).json({
+        success: false,
+        message: "Deal not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Deal deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
