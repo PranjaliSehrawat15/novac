@@ -11,3 +11,9 @@ router.post(
   authorize("admin"),
   leadController.createLead
 );
+
+router.get(
+  "/",
+  protect,
+  leadController.getLeads
+);
