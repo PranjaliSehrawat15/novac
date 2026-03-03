@@ -17,3 +17,10 @@ router.get(
   protect,
   leadController.getLeads
 );
+
+router.put(
+  "/:id",
+  protect,
+  authorize("admin", "manager", "sales"),
+  leadController.updateLead
+);
