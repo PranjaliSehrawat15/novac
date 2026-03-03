@@ -35,6 +35,8 @@ exports.getLeads = async (req, res) => {
   }
 };
 
+// Update Lead
+
 exports.updateLead = async (req, res) => {
   try {
     const lead = await Lead.findById(req.params.id);

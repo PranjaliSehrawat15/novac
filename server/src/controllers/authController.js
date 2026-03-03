@@ -60,7 +60,6 @@ exports.login = async (req, res) => {
   }
 };
 
-
 // 👤 GET ME
 exports.getMe = async (req, res) => {
   res.status(200).json({
@@ -68,8 +67,6 @@ exports.getMe = async (req, res) => {
     user: req.user,
   });
 };
-
-
 
 // 🔄 CHANGE PASSWORD
 exports.changePassword = async (req, res) => {
