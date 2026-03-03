@@ -18,3 +18,28 @@ exports.createActivity = async (req, res) => {
     });
   }
 };
+
+exports.getActivities = async (req, res) => {
+  try {
+    let activities;
+
+    if (req.user.role === "admin") {
+      activities = await Activity.find().populate("assignedTo createdBy");
+    } else {
+      activities = await Activity.find({
+        assignedTo: req.user.id,
+      }).populate("assignedTo createdBy");
+    }
+
+    res.status(200).json({
+      success: true,
+      count: activities.length,
+      data: activities,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
