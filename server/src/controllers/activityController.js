@@ -43,3 +43,30 @@ exports.getActivities = async (req, res) => {
     });
   }
 };
+
+exports.updateActivityStatus = async (req, res) => {
+  try {
+    const activity = await Activity.findById(req.params.id);
+
+    if (!activity) {
+      return res.status(404).json({
+        success: false,
+        message: "Activity not found",
+      });
+    }
+
+    activity.status = req.body.status || activity.status;
+
+    await activity.save();
+
+    res.status(200).json({
+      success: true,
+      data: activity,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
