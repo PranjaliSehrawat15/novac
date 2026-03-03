@@ -133,3 +133,56 @@ exports.toggleUserStatus = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 }
+
+
+// ✅ Register User
+exports.registerUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User already exists",
+      });
+    }
+
+    // 🔥 Role hierarchy protection
+    if (req.user.role === "manager" && role !== "employee") {
+      return res.status(403).json({
+        success: false,
+        message: "Managers can only create employees",
+      });
+    }
+
+    const allowedRoles = ["admin", "manager", "employee"];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid role",
+      });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password, // send plain password
+      role,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      data: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

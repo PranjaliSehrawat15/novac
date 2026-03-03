@@ -6,6 +6,7 @@ const {
   getUserById,
   updateUserRole,
   toggleUserStatus,
+  registerUser,
 } = require("../controllers/userController");
 
 const { protect } = require("../middlewares/authMiddleware");
@@ -18,11 +19,11 @@ router.patch("/:id/role", protect, authorize("admin"), updateUserRole);
 router.patch("/:id/status", protect, authorize("admin"), toggleUserStatus);
 
 // Admin & Manager can create users
-// router.post(
-//   "/register",
-//   protect,
-//   authorize("admin", "manager"),
-//   registerUser
-// );
+router.post(
+  "/register",
+  protect,
+  authorize("admin", "manager"),
+  registerUser
+);
 
 module.exports = router;
