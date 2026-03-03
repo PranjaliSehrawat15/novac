@@ -18,3 +18,22 @@ exports.createNote = async (req, res) => {
     });
   }
 };
+
+exports.getNotesByRelated = async (req, res) => {
+  try {
+    const notes = await Note.find({
+      relatedId: req.params.relatedId,
+    }).populate("createdBy", "name email");
+
+    res.status(200).json({
+      success: true,
+      count: notes.length,
+      data: notes,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
