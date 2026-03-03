@@ -15,5 +15,6 @@ app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/leads", require("./src/routes/leadRouter"));
 app.use("/api/deals",  require("./src/routes/dealRoutes"));
 app.use("/api/activities", require("./src/routes/activityRoutes"));
+app.use("/api/stages", require("./src//routes/stageRoutes"));
 
 module.exports = app;
