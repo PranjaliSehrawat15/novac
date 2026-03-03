@@ -48,3 +48,32 @@ exports.getAllDeals = async(req, res) => {
         });
     }
 }
+
+
+//update deals
+exports.updateDeal = async (req, res) => {
+  try {
+    const deal = await Deal.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
+    if (!deal) {
+      return res.status(404).json({
+        success: false,
+        message: "Deal not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: deal,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
