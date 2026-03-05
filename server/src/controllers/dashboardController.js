@@ -1,43 +1,38 @@
-const Lead = require("../models/Lead");
-const Deal = require("../models/Deals");
-const Stage = require("../models/Stage");
+const dynamoDB = require("../config/dynamo");
+const { ScanCommand } = require("@aws-sdk/lib-dynamodb");
 
+const TABLE_NAME = "Novac";
+
+/**
+ * 🔹 Get Summary
+ */
 exports.getSummary = async (req, res) => {
   try {
-    const totalLeads = await Lead.countDocuments();
-    const totalDeals = await Deal.countDocuments();
+    const result = await dynamoDB.send(
+      new ScanCommand({
+        TableName: TABLE_NAME,
+      })
+    );
 
-    const closedWonStage = await Stage.findOne({ name: "Closed Won" });
-    const closedLostStage = await Stage.findOne({ name: "Closed Lost" });
+    const items = result.Items;
 
-    const closedWonDeals = closedWonStage
-      ? await Deal.countDocuments({ stage: closedWonStage._id })
-      : 0;
+    const leads = items.filter((i) => i.entity === "LEAD");
+    const deals = items.filter((i) => i.entity === "DEAL");
 
-    const closedLostDeals = closedLostStage
-      ? await Deal.countDocuments({ stage: closedLostStage._id })
-      : 0;
+    const totalLeads = leads.length;
+    const totalDeals = deals.length;
 
-    const revenueData = await Deal.aggregate([
-      {
-        $lookup: {
-          from: "stages",
-          localField: "stage",
-          foreignField: "_id",
-          as: "stageInfo",
-        },
-      },
-      { $unwind: "$stageInfo" },
-      { $match: { "stageInfo.name": "Closed Won" } },
-      {
-        $group: {
-          _id: null,
-          totalRevenue: { $sum: "$value" },
-        },
-      },
-    ]);
+    const closedWonDeals = deals.filter(
+      (d) => d.stage === "Closed Won"
+    ).length;
 
-    const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
+    const closedLostDeals = deals.filter(
+      (d) => d.stage === "Closed Lost"
+    ).length;
+
+    const totalRevenue = deals
+      .filter((d) => d.stage === "Closed Won")
+      .reduce((sum, d) => sum + (d.value || 0), 0);
 
     res.status(200).json({
       success: true,
@@ -49,6 +44,7 @@ exports.getSummary = async (req, res) => {
         totalRevenue,
       },
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -57,31 +53,45 @@ exports.getSummary = async (req, res) => {
   }
 };
 
+/**
+ * 🔹 Get Pipeline
+ */
 exports.getPipeline = async (req, res) => {
   try {
-    const pipeline = await Deal.aggregate([
-      {
-        $lookup: {
-          from: "stages",
-          localField: "stage",
-          foreignField: "_id",
-          as: "stageInfo",
-        },
-      },
-      { $unwind: "$stageInfo" },
-      {
-        $group: {
-          _id: "$stageInfo.name",
-          count: { $sum: 1 },
-          revenue: { $sum: "$value" },
-        },
-      },
-    ]);
+    const result = await dynamoDB.send(
+      new ScanCommand({
+        TableName: TABLE_NAME,
+      })
+    );
+
+    const deals = result.Items.filter(
+      (i) => i.entity === "DEAL"
+    );
+
+    const pipelineMap = {};
+
+    deals.forEach((deal) => {
+      const stage = deal.stage || "Unknown";
+
+      if (!pipelineMap[stage]) {
+        pipelineMap[stage] = {
+          _id: stage,
+          count: 0,
+          revenue: 0,
+        };
+      }
+
+      pipelineMap[stage].count += 1;
+      pipelineMap[stage].revenue += deal.value || 0;
+    });
+
+    const pipeline = Object.values(pipelineMap);
 
     res.status(200).json({
       success: true,
       data: pipeline,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -90,31 +100,45 @@ exports.getPipeline = async (req, res) => {
   }
 };
 
+/**
+ * 🔹 Get Performance (Deals per assigned user)
+ */
 exports.getPerformance = async (req, res) => {
   try {
-    const performance = await Deal.aggregate([
-      {
-        $lookup: {
-          from: "users",
-          localField: "assignedTo",
-          foreignField: "_id",
-          as: "userInfo",
-        },
-      },
-      { $unwind: "$userInfo" },
-      {
-        $group: {
-          _id: "$userInfo.name",
-          totalDeals: { $sum: 1 },
-          revenue: { $sum: "$value" },
-        },
-      },
-    ]);
+    const result = await dynamoDB.send(
+      new ScanCommand({
+        TableName: TABLE_NAME,
+      })
+    );
+
+    const deals = result.Items.filter(
+      (i) => i.entity === "DEAL"
+    );
+
+    const performanceMap = {};
+
+    deals.forEach((deal) => {
+      const userKey = deal.assignedTo || "Unassigned";
+
+      if (!performanceMap[userKey]) {
+        performanceMap[userKey] = {
+          _id: userKey,
+          totalDeals: 0,
+          revenue: 0,
+        };
+      }
+
+      performanceMap[userKey].totalDeals += 1;
+      performanceMap[userKey].revenue += deal.value || 0;
+    });
+
+    const performance = Object.values(performanceMap);
 
     res.status(200).json({
       success: true,
       data: performance,
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,

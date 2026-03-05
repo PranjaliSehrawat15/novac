@@ -12,18 +12,15 @@ const {
 const { protect } = require("../middlewares/authMiddleware");
 const authorize = require("../middlewares/roleMiddleware");
 
+router.use(protect);
+
 // Admin only routes
-router.get("/", protect, authorize("admin"), getAllUsers);
-router.get("/:id", protect, authorize("admin"), getUserById);
-router.patch("/:id/role", protect, authorize("admin"), updateUserRole);
-router.patch("/:id/status", protect, authorize("admin"), toggleUserStatus);
+router.get("/", authorize("admin"), getAllUsers);
+router.get("/:id", authorize("admin"), getUserById);
+router.patch("/:id/role", authorize("admin"), updateUserRole);
+router.patch("/:id/status", authorize("admin"), toggleUserStatus);
 
 // Admin & Manager can create users
-router.post(
-  "/register",
-  protect,
-  authorize("admin", "manager"),
-  registerUser
-);
+router.post("/register", authorize("admin", "manager"), registerUser);
 
 module.exports = router;

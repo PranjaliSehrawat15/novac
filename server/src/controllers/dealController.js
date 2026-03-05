@@ -1,75 +1,17 @@
-const Deal = require("../models/Deals");
+const dealService = require("../services/dealService");
 
-// create Deal
-exports.createDeal = async(req, res) => {
-    try {
-
-        const deal = await Deal.create({
-            ...req.body,
-            createdBy: req.user.id,
-        });
-
-        res.status(201).json({
-            success:true,
-            data:deal,
-        });
-
-    }catch(error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
-    }
-}
-
-//get all deals
-exports.getAllDeals = async(req, res) => {
-    try{
-        let deals;
-        if(req.user.role === "admin") {
-            deals = await Deal.find()
-                .populate("lead", "name email")
-                .populate("assignedTo", "name email");
-        }else {
-      deals = await Deal.find({ assignedTo: req.user.id })
-        .populate("lead", "name email")
-        .populate("assignedTo", "name email");
-    }
-
-    res.status(200).json({
-      success: true,
-      count: deals.length,
-      data: deals,
-    });
-    }catch(error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
-    }
-}
-
-
-//update deals
-exports.updateDeal = async (req, res) => {
+/**
+ * Create Deal
+ */
+exports.createDeal = async (req, res) => {
   try {
-    const deal = await Deal.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
+    const deal = await dealService.createDeal(req.body, req.user.id);
 
-    if (!deal) {
-      return res.status(404).json({
-        success: false,
-        message: "Deal not found",
-      });
-    }
-
-    res.status(200).json({
+    res.status(201).json({
       success: true,
       data: deal,
     });
+
   } catch (error) {
     res.status(400).json({
       success: false,
@@ -78,22 +20,71 @@ exports.updateDeal = async (req, res) => {
   }
 };
 
-//delete deals
-exports.deleteDeal = async (req, res) => {
+/**
+ * Get Deals
+ */
+exports.getAllDeals = async (req, res) => {
   try {
-    const deal = await Deal.findByIdAndDelete(req.params.id);
+    const deals = await dealService.getDeals(req.user);
 
-    if (!deal) {
+    res.status(200).json({
+      success: true,
+      count: deals.length,
+      data: deals,
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Update Deal
+ */
+exports.updateDeal = async (req, res) => {
+  try {
+    const existing = await dealService.getDealById(req.params.id);
+
+    if (!existing) {
       return res.status(404).json({
         success: false,
         message: "Deal not found",
       });
     }
 
+    const updated = await dealService.updateDeal(
+      req.params.id,
+      req.body
+    );
+
+    res.status(200).json({
+      success: true,
+      data: updated,
+    });
+
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Delete Deal
+ */
+exports.deleteDeal = async (req, res) => {
+  try {
+    await dealService.deleteDeal(req.params.id);
+
     res.status(200).json({
       success: true,
       message: "Deal deleted successfully",
     });
+
   } catch (error) {
     res.status(500).json({
       success: false,

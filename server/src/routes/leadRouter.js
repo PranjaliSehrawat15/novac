@@ -5,31 +5,18 @@ const leadController = require("../controllers/leadController");
 const { protect } = require("../middlewares/authMiddleware");
 const authorize = require("../middlewares/roleMiddleware");
 
-router.post(
-  "/",
-  protect,
-  authorize("admin"),
-  leadController.createLead
-);
+router.use(protect);
 
-router.get(
-  "/",
-  protect,
-  leadController.getLeads
-);
+// Only Admin can create leads
+router.post("/", authorize("admin"), leadController.createLead);
 
-router.put(
-  "/:id",
-  protect,
-  authorize("admin", "manager", "sales"),
-  leadController.updateLead
-);
+// All roles can view leads
+router.get("/", authorize("admin", "manager", "employee"), leadController.getLeads);
 
-router.delete(
-  "/:id",
-  protect,
-  authorize("admin"),
-  leadController.deleteLead
-);
+// Admin & Manager can update
+router.put("/:id", authorize("admin", "manager"), leadController.updateLead);
+
+// Only Admin can delete
+router.delete("/:id", authorize("admin"), leadController.deleteLead);
 
 module.exports = router;

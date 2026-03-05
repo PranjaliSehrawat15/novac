@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const userService = require("../services/userService");
 
 const protect = async (req, res, next) => {
   let token;
@@ -21,14 +21,20 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = await User.findById(decoded.id).select("-password");
+    // 🔥 Fetch user from DynamoDB
+    const user = await userService.getUserById(decoded.id);
 
-    if (!req.user) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: "User not found",
       });
     }
+
+    // Remove password before attaching
+    delete user.password;
+
+    req.user = user;
 
     next();
   } catch (error) {
