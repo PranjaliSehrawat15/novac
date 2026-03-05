@@ -1,7 +1,9 @@
-const User = require("../models/User");
+const userService = require("../services/userService");
 const generateToken = require("../utils/generateToken");
 
-// 🔑 LOGIN
+/**
+ * 🔑 LOGIN
+ */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -13,8 +15,8 @@ exports.login = async (req, res) => {
       });
     }
 
-    // include password explicitly (because select: false)
-    const user = await User.findOne({ email }).select("+password");
+    // 🔍 Get user from Dynamo using GSI3 (email index)
+    const user = await userService.getUserByEmail(email);
 
     if (!user) {
       return res.status(401).json({
@@ -30,7 +32,10 @@ exports.login = async (req, res) => {
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await userService.comparePassword(
+      password,
+      user.password
+    );
 
     if (!isMatch) {
       return res.status(401).json({
@@ -45,12 +50,13 @@ exports.login = async (req, res) => {
       success: true,
       token,
       user: {
-        id: user._id,
+        id: user.id, // ⚠️ changed from _id to id
         name: user.name,
         email: user.email,
         role: user.role,
       },
     });
+
   } catch (error) {
     console.error("Login Error:", error);
     res.status(500).json({
@@ -60,7 +66,9 @@ exports.login = async (req, res) => {
   }
 };
 
-// 👤 GET ME
+/**
+ * 👤 GET ME
+ */
 exports.getMe = async (req, res) => {
   res.status(200).json({
     success: true,
@@ -68,14 +76,26 @@ exports.getMe = async (req, res) => {
   });
 };
 
-// 🔄 CHANGE PASSWORD
+/**
+ * 🔄 CHANGE PASSWORD
+ */
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user._id).select("+password");
+    const user = await userService.getUserById(req.user.id);
 
-    const isMatch = await user.comparePassword(currentPassword);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const isMatch = await userService.comparePassword(
+      currentPassword,
+      user.password
+    );
 
     if (!isMatch) {
       return res.status(400).json({
@@ -84,13 +104,13 @@ exports.changePassword = async (req, res) => {
       });
     }
 
-    user.password = newPassword;
-    await user.save();
+    await userService.updatePassword(user.id, newPassword);
 
     res.status(200).json({
       success: true,
       message: "Password updated successfully",
     });
+
   } catch (error) {
     console.error("Change Password Error:", error);
     res.status(500).json({
