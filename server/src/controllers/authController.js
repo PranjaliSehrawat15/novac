@@ -119,3 +119,79 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+/**
+ * 📝 UPDATE PROFILE (name only — email cannot be changed)
+ */
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Name is required",
+      });
+    }
+
+    const { UpdateCommand } = require("@aws-sdk/lib-dynamodb");
+    const dynamoDB = require("../config/dynamo");
+    const TABLE_NAME = process.env.DYNAMODB_TABLE || "Novac";
+
+    await dynamoDB.send(
+      new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: {
+          PK: `USER#${req.user.id}`,
+          SK: "METADATA",
+        },
+        UpdateExpression: "SET #name = :name",
+        ExpressionAttributeNames: { "#name": "name" },
+        ExpressionAttributeValues: { ":name": name.trim() },
+      })
+    );
+
+    // Update user in response
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        ...req.user,
+        name: name.trim(),
+      },
+    });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
+
+/**
+ * 🚫 DEACTIVATE SELF
+ */
+exports.deactivateSelf = async (req, res) => {
+  try {
+    const { UpdateCommand } = require("@aws-sdk/lib-dynamodb");
+    const dynamoDB = require("../config/dynamo");
+    const TABLE_NAME = process.env.DYNAMODB_TABLE || "Novac";
+
+    await dynamoDB.send(
+      new UpdateCommand({
+        TableName: TABLE_NAME,
+        Key: {
+          PK: `USER#${req.user.id}`,
+          SK: "METADATA",
+        },
+        UpdateExpression: "SET isActive = :isActive",
+        ExpressionAttributeValues: { ":isActive": false },
+      })
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Account deactivated. You will be logged out.",
+    });
+  } catch (error) {
+    console.error("Deactivate Error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+};
