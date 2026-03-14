@@ -6,6 +6,8 @@ import {
   MessageSquare, Paperclip, Rocket
 } from 'lucide-react';
 import { motion } from 'motion/react';
+import SharedHeader from '../components/SharedHeader';
+import { useTheme } from '../context/ThemeContext';
 
 const SidebarItem = ({ icon: Icon, label, active = false, to }) => (
   <Link
