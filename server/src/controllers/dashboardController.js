@@ -14,7 +14,7 @@ exports.getSummary = async (req, res) => {
       })
     );
 
-    const items = result.Items;
+    const items = result.Items || [];
 
     const leads = items.filter((i) => i.entity === "LEAD");
     const deals = items.filter((i) => i.entity === "DEAL");

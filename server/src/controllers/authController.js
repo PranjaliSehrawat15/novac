@@ -179,7 +179,7 @@ exports.deactivateSelf = async (req, res) => {
         TableName: TABLE_NAME,
         Key: {
           PK: `USER#${req.user.id}`,
-          SK: "METADATA",
+          SK: "METADATA", // ⚠️ changed from "METADATA" to "PROFILE#id"
         },
         UpdateExpression: "SET isActive = :isActive",
         ExpressionAttributeValues: { ":isActive": false },

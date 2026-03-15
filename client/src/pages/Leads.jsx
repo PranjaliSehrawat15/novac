@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, TrendingUp, Clock, X, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { getLeads, createLead, getAllUsers } from '../services/api';
+import { getLeads, createLead, getAllUsers, assignLead, updateLeadStatus } from '../services/api';
 import SharedHeader from '../components/SharedHeader';
 import { useTheme } from '../context/ThemeContext';
 
@@ -119,11 +119,32 @@ export default function LeadsPage() {
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
 
   const fetchLeads = async () => {
-    setLoading(true); setError('');
-    try { setLeads(await getLeads().then(d=>Array.isArray(d)?d:[])); }
-    catch (e) { setError(e.message); }
-    finally { setLoading(false); }
-  };
+  setLoading(true); setError('');
+  try { setLeads(await getLeads().then(d=>Array.isArray(d)?d:[])); }
+  catch (e) { setError(e.message); }
+  finally { setLoading(false); }
+};
+
+// 👇 ADD THESE FUNCTIONS HERE
+
+const handleAssign = async (leadId) => {
+  try {
+    const employeeId = currentUser.id;
+    await assignLead(leadId, employeeId);
+    fetchLeads();
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
+const handleStatusChange = async (leadId, status) => {
+  try {
+    await updateLeadStatus(leadId, status);
+    fetchLeads();
+  } catch (err) {
+    alert(err.message);
+  }
+};
 
   useEffect(() => {
     if (!localStorage.getItem('token')) { navigate('/login'); return; }
@@ -238,17 +259,42 @@ export default function LeadsPage() {
                               {lead.name?.charAt(0)?.toUpperCase()||'?'}
                             </div>
                             <div>
-                              <div className="text-sm font-semibold transition-colors group-hover:text-[var(--accent-blue)]"
-                                style={{ color:'var(--text-primary)' }}>{lead.name}</div>
-                              <div className="text-xs" style={{ color:'var(--text-tertiary)' }}>{lead.company||'—'}</div>
-                            </div>
+  <div
+    className="text-sm font-semibold transition-colors group-hover:text-[var(--accent-blue)]"
+    style={{ color:'var(--text-primary)' }}
+  >
+    {lead.name}
+  </div>
+
+  <div className="text-xs" style={{ color:'var(--text-tertiary)' }}>
+    {lead.company || '—'}
+  </div>
+
+  {/* Assign button */}
+  <button
+    onClick={() => handleAssign(lead.id)}
+    className="text-xs text-blue-500 hover:underline mt-1"
+  >
+    Assign to Me
+  </button>
+</div>
                           </div>
                         </td>
                         <td className="px-5 py-3.5 text-sm" style={{ color:'var(--text-secondary)' }}>{lead.email}</td>
                         <td className="px-5 py-3.5 text-sm" style={{ color:'var(--text-secondary)' }}>{lead.company||'—'}</td>
                         <td className="px-5 py-3.5">
-                          <span className={STATUS_BADGE[lead.status]||'badge badge-neutral'}>{STATUS_LABEL[lead.status]||lead.status}</span>
-                        </td>
+  <select
+    value={lead.status}
+    onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+    className="nova-input text-xs"
+  >
+    <option value="new">New</option>
+    <option value="qualified">Qualified</option>
+    <option value="in-progress">In Progress</option>
+    <option value="converted">Converted</option>
+    <option value="lost">Lost</option>
+  </select>
+</td>
                         <td className="px-5 py-3.5 text-sm" style={{ color:'var(--text-secondary)' }}>{lead.phone||'—'}</td>
                         <td className="px-5 py-3.5 text-sm" style={{ color:'var(--text-tertiary)' }}>
                           {lead.createdAt ? new Date(lead.createdAt).toLocaleDateString() : '—'}

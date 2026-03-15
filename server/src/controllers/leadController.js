@@ -77,3 +77,72 @@ exports.deleteLead = async (req, res) => {
     });
   }
 };
+
+exports.assignLead = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { employeeId } = req.body;
+
+    const lead = await leadService.getLeadById(id);
+
+    if (!lead) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found"
+      });
+    }
+
+    const updatedLead = await leadService.updateLead(
+      lead,
+      { assignedTo: `USER#${employeeId}` },
+      req.user
+    );
+
+    res.json({
+      success: true,
+      data: updatedLead
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+
+/**
+ * Update Lead Status (Pipeline Stage)
+ */
+exports.updateLeadStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const lead = await leadService.getLeadById(id);
+
+    if (!lead) {
+      return res.status(404).json({
+        success: false,
+        message: "Lead not found"
+      });
+    }
+
+    const updatedLead = await leadService.updateLead(
+      lead,
+      { status },
+      req.user
+    );
+
+    res.json({
+      success: true,
+      data: updatedLead
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

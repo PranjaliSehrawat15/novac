@@ -68,3 +68,15 @@ export const updateDeal = (id, data) =>
 
 export const deleteDeal = (id) =>
   request(`/deals/${id}`, { method: 'DELETE' });
+
+export const assignLead = (id, employeeId) =>
+  request(`/leads/${id}/assign`, {
+    method: 'PATCH',
+    body: JSON.stringify({ employeeId })
+  });
+
+export const updateLeadStatus = (id, status) =>
+  request(`/leads/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status })
+  });

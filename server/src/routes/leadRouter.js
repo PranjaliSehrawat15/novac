@@ -19,4 +19,7 @@ router.put("/:id", authorize("admin", "manager"), leadController.updateLead);
 // Only Admin can delete
 router.delete("/:id", authorize("admin"), leadController.deleteLead);
 
+router.patch("/:id/assign", protect, leadController.assignLead);
+router.patch("/:id/status",protect,  leadController.updateLeadStatus);
+
 module.exports = router;

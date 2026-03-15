@@ -77,7 +77,7 @@ exports.getActivities = async (user) => {
   const result = await dynamoDB.send(
     new QueryCommand({
       TableName: TABLE_NAME,
-      IndexName: "GSI2",
+      IndexName: "GSI2PK",
       KeyConditionExpression: "GSI2PK = :user",
       ExpressionAttributeValues: {
         ":user": `USER#${user.id}`,

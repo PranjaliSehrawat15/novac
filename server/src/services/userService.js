@@ -22,7 +22,7 @@ exports.createUser = async (userData) => {
 
   const item = {
     PK: `USER#${userId}`,
-    SK: "METADATA",
+    SK: `PROFILE#${userId}`, // ⚠️ changed from "METADATA" to "PROFILE#id"    
     entity: "USER",
 
     id: userId,
@@ -84,7 +84,7 @@ exports.getUserById = async (id) => {
       TableName: TABLE_NAME,
       Key: {
         PK: `USER#${id}`,
-        SK: "METADATA",
+        SK: `PROFILE#${id}`,
       },
     })
   );
@@ -99,7 +99,7 @@ exports.getUserByEmail = async (email) => {
   const result = await dynamoDB.send(
     new QueryCommand({
       TableName: TABLE_NAME,
-      IndexName: "GSI3",
+      IndexName: "GSI3PK-GSI3SK-index",
       KeyConditionExpression: "GSI3PK = :email",
       ExpressionAttributeValues: {
         ":email": `EMAIL#${email}`,
@@ -123,7 +123,7 @@ exports.updateUserRole = async (userId, newRole) => {
       TableName: TABLE_NAME,
       Key: {
         PK: `USER#${userId}`,
-        SK: "METADATA",
+        SK: `PROFILE#${userId}`,
       },
       UpdateExpression: `
         SET #role = :role,
@@ -156,7 +156,7 @@ exports.toggleUserStatus = async (userId, isActive) => {
       TableName: TABLE_NAME,
       Key: {
         PK: `USER#${userId}`,
-        SK: "METADATA",
+        SK: `PROFILE#${userId}`,
       },
       UpdateExpression: "SET isActive = :isActive",
       ExpressionAttributeValues: {
@@ -191,7 +191,7 @@ exports.updatePassword = async (userId, newPassword) => {
       TableName: TABLE_NAME,
       Key: {
         PK: `USER#${userId}`,
-        SK: "METADATA",
+        SK: `PROFILE#${userId}`,
       },
       UpdateExpression: "SET #password = :password",
       ExpressionAttributeNames: {
