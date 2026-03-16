@@ -21,7 +21,7 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:5173",
-      process.env.FRONTEND_URL || "https://your-app.vercel.app",
+      process.env.FRONTEND_URL || "https://novacrm-sigma.vercel.app",
     ],
     credentials: true,
   })
