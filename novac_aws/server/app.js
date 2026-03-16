@@ -9,9 +9,20 @@ dotenv.config();
 const app = express();
 
 // ✅ FIXED: cors middleware applied after app is defined
+// app.use(
+//   cors({
+//     origin: ["http://localhost:3000"],
+//     credentials: true,
+//   })
+// );
+
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      process.env.FRONTEND_URL || "https://your-app.vercel.app",
+    ],
     credentials: true,
   })
 );
