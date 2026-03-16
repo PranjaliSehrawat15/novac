@@ -16,13 +16,35 @@ const app = express();
 //   })
 // );
 
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:3000",
+//       "http://localhost:5173",
+//       process.env.FRONTEND_URL || "https://novacrm-sigma.vercel.app",
+//     ],
+//     credentials: true,
+//   })
+// );
+
+// app.use(
+//   cors({
+//     origin: [
+//       "http://localhost:3000",
+//       "http://localhost:5173",
+//       "https://novacrm-sigma.vercel.app",
+//       "https://novacrm-paarthgup001-5458s-projects.vercel.app",
+//       "https://novacrm-git-main-paarthgup001-5458s-projects.vercel.app",
+//     ],
+//     credentials: true,
+//   })
+// );
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      process.env.FRONTEND_URL || "https://novacrm-sigma.vercel.app",
-    ],
+    origin: function(origin, callback) {
+      callback(null, true);
+    },
     credentials: true,
   })
 );
