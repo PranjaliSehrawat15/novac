@@ -123,11 +123,13 @@ Create a `.env` file:
 ```env
 PORT=5000
 JWT_SECRET=your_jwt_secret_key
-AWS_REGION=us-east-1
+JWT_EXPIRE=7d
+AWS_REGION=us-north-1
 AWS_ACCESS_KEY_ID=your_access_key
 AWS_SECRET_ACCESS_KEY=your_secret_key
-DYNAMODB_TABLE_PREFIX=novacrm_
-BEDROCK_MODEL_ID=amazon.nova-pro-v1:0
+DYNAMODB_TABLE=novacrm_
+BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
+BEDROCK_FAST_MODEL_ID=amazon.nova-micro-v1:0
 ```
 
 ### Run
