@@ -13,7 +13,7 @@
 
 **NovaCRM** is a full-stack, cloud-native CRM platform that integrates AI-powered automation via **Amazon Bedrock** and **Amazon Nova** foundation models — making your entire sales pipeline smarter, faster, and more efficient.
 
-🌐 **Live Demo:** [novacrm-sigma.vercel.app/login](https://novacrm-sigma.vercel.app/login)
+🌐 **Live Demo:** [novacrm-sigma.vercel.app](novacrm-sigma.vercel.app)
 
 [Features](#-features) • [Tech Stack](#-tech-stack) • [Architecture](#-architecture) • [Getting Started](#-getting-started) • [AI Capabilities](#-ai-capabilities) • [Roadmap](#-roadmap)
 
